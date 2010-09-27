@@ -1,11 +1,8 @@
 #include <stdlib.h>
+#define GLEW_STATIC
 #include <GL/glew.h>
-#ifdef __APPLE__
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
-#endif
 #include <stdio.h>
+#include "sdl.h"
 
 static int make_resources(void)
 {
@@ -24,23 +21,20 @@ static void render(void)
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glutSwapBuffers();
+    SDL_GL_SwapBuffers();
 }
+
+extern int done;
 
 /*
  * Entry point
  */
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-    glutInitWindowSize(400, 300);
-    glutCreateWindow("Hello World");
-    glutIdleFunc(&update_fade_factor);
-    glutDisplayFunc(&render);
+    initSDL();
 
     glewInit();
-    if (!GLEW_VERSION_2_0) {
+    if (!glewIsSupported("GL_VERSION_2_0")) {
         fprintf(stderr, "OpenGL 2.0 not available\n");
         return 1;
     }
@@ -50,7 +44,13 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    glutMainLoop();
+    while (!done) {
+        handleInput();
+        update_fade_factor();
+        render();
+    }
+
+    SDL_Quit();
     return 0;
 }
 
